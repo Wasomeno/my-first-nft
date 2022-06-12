@@ -1,6 +1,6 @@
-# Basic Sample Hardhat Project
+# My First NFT Smart Contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+This is my first completed solidity project after learning the basics of solidity and ERC721. I'm using Beanz's (Azuki) metadata for the pictures on every token because i really like the art. You can mint, you can stake, and also sell them on the beanz marketplace.
 
 Try running some of the following tasks:
 
