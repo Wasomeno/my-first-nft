@@ -134,10 +134,9 @@
   background-color: #ba3649;
 }
 
-input{
+input {
   text-align: center;
 }
-
 
 /* Staking page styling */
 
@@ -203,13 +202,14 @@ input{
 }
 
 #staked-icon {
+  z-index: 10;
   position: absolute;
   background-color: white;
   padding: 5px;
   border-radius: 50%;
   border: 4px solid black;
   right: -15%;
-  top: -5%
+  top: -5%;
 }
 
 /*Marketplace page styling */
@@ -228,7 +228,6 @@ input{
 }
 
 #marketplace-items {
-
 }
 
 #marketplace-card {
@@ -278,7 +277,6 @@ input{
   font-size: 30px;
   letter-spacing: 2px;
 }
-
 
 @font-face {
   font-family: Chasquilla;
