@@ -40,39 +40,38 @@ contract CoolBeanz is ERC721Enumerable, Ownable {
         setBaseURI(baseURI);
     }
 
-    function createBeanz(uint _quantity) public payable{
+    function createBeanz(uint _quantity) external payable{
         // require(auctionDetails.status == true, "Auction has not started");
         require(_quantity <= 3, "You can't mint more than 3 CoolBeanz");
         require(_quantity + currentSupply <= 5555, "You mint too many");
         require(msg.value >= price * _quantity, "Wrong value of ether");
 
-        for(uint i; i < _quantity; i++) {
+        for(uint i; i < _quantity; ++i) {
             _safeMint(msg.sender, currentSupply);
             beanzToOwner[currentSupply] = msg.sender;
             beanzLevel[currentSupply] = Beanz(1);
-            currentSupply ++ ;
+            uint current = currentSupply;
+            current++;
+            currentSupply = current;
         }
     }
 
     function beanzLevelUp(uint _tokenId) public {
-        Beanz memory beanz = beanzLevel[_tokenId];
-        beanz.level++;
+        uint level = beanzLevel[_tokenId].level;
+        beanzLevel[_tokenId].level = level + 1;
     }
 
-    function getBeanzLevel(uint _tokenId) public returns(uint){
-        Beanz memory beanz = beanzLevel[_tokenId];
-        return beanz.level;
+    function getBeanzLevel(uint _tokenId) external view returns(uint level){
+        level = beanzLevel[_tokenId].level;
     }
 
     function getPrice() public view returns(uint){
-        require(auctionDetails.status == true, "Auction has not started");
-        
+        require(auctionDetails.status, "Auction has not started");
         uint timepassed = block.timestamp - auctionDetails.startTime;
         uint timepassedrate = timepassed / (auctionDetails.duration / 4);
         uint pricerate = timepassedrate * pricedroprate;
         uint mintprice = startingPrice - pricerate;
-
-       uint auctionDuration = auctionDetails.startTime + auctionDetails.duration;
+        uint auctionDuration = auctionDetails.startTime + auctionDetails.duration;
         if(auctionDuration > block.timestamp) {
             return mintprice;
         } else if(pricerate >= startingPrice) {
@@ -80,34 +79,36 @@ contract CoolBeanz is ERC721Enumerable, Ownable {
         }else {
             return minimalPrice;
         }
-        
         return minimalPrice;
     }
 
-    function setWhitelist(address[] memory _address) public onlyOwner{
-        for(uint i; i < _address.length ; i++) {
-            whitelisted[_address[i]] = true;
+    function setWhitelist(address[] calldata _address) external onlyOwner{
+        uint length = _address.length;
+        for(uint i; i < length ; ++i) {
+            address whitelist = _address[i];
+            whitelisted[whitelist] = true;
             currentWhitelisted ++;
         }
     }
 
-    function startAuction(uint _duration) public onlyOwner {
+    function startAuction(uint _duration) external onlyOwner {
         require(_duration <= 6 || _duration > 0 , "Auction time can't be above 6 hours");
         auctionDetails.status = true;
         auctionDetails.duration = _duration * 3600;
         auctionDetails.startTime = block.timestamp;
     }
 
-    function getBeanzOwner(address _to) public view returns (uint[] memory){
-        uint[] memory beanzs = new uint[](balanceOf(_to));
+    function getBeanzOwner(address _to) external view returns (uint[] memory beanzs){
         uint array = 0;
-        for(uint idBeanz = 0; idBeanz < currentSupply; idBeanz++){
-            if (beanzToOwner[idBeanz] == _to) {
+        beanzs = new uint[](balanceOf(_to));
+        uint supply = currentSupply;
+        for(uint idBeanz; idBeanz < supply; ++idBeanz){
+            address owner = beanzToOwner[idBeanz];
+            if (owner == _to) {
                 beanzs[array] = idBeanz;
                 array++;
             }
         }
-        return beanzs;
     }
 
     function deleteBeanzFromOwner(uint _tokenId) public{

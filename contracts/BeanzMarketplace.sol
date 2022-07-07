@@ -19,50 +19,53 @@ contract BeanzMarketplace is IERC721Receiver, Ownable{
     }
 
     uint public currentOnSale = 0;
-
     uint[] public beanzId;
-
     mapping(uint => onSale) public beanzOnSale;
 
-    function setInterface(address _beanzAddress) public onlyOwner{
+    function setInterface(address _beanzAddress) external onlyOwner{
         beanz = IERC721(_beanzAddress);
         beanzInterface = IBEANZ(_beanzAddress);
     }
 
-    function sellBeanz(uint _tokenId, uint _price) public {
+    function sellBeanz(uint _tokenId, uint _price) external {
         beanzInterface.deleteBeanzFromOwner(_tokenId);
         beanzOnSale[_tokenId] = onSale(_price, msg.sender);
         beanz.safeTransferFrom(msg.sender, address(this), _tokenId, "");
         beanzId.push(_tokenId);
-        currentOnSale ++;
+        uint current = currentOnSale;
+        current++;
+        currentOnSale = current;
     }
 
-    function buyBeanz(uint _tokenId, address _to) public payable{
-        require(beanzOnSale[_tokenId].owner != _to, "You can't buy your own beanz");
-        require(msg.value >= beanzOnSale[_tokenId].price, "Wrong price");
-        beanz.safeTransferFrom(address(this), msg.sender, _tokenId, "");
-        beanzInterface.addBeanzToOwner(_tokenId, _to);
-
+    function buyBeanz(uint _tokenId, address _to) external payable{
+        address owner = beanzOnSale[_tokenId].owner;
+        uint price = beanzOnSale[_tokenId].price;
         uint tax = msg.value / 5;
         uint priceOnTax = (msg.value - tax);
-
-        (bool sent, bytes memory data) = beanzOnSale[_tokenId].owner.call{value: priceOnTax}("");
+        onSale memory soldBeanz= beanzOnSale[_tokenId];
+        require(owner != _to, "You can't buy your own beanz");
+        require(msg.value >= price, "Wrong price");
+        beanz.safeTransferFrom(address(this), msg.sender, _tokenId, "");
+        beanzInterface.addBeanzToOwner(_tokenId, _to);
+        (bool sent, bytes memory data) = owner.call{value: priceOnTax}("");
         require(sent, "Ether not sent");
-
-        delete beanzOnSale[_tokenId];
+        delete soldBeanz;
         deleteBeanz(_tokenId);
-        
-        currentOnSale = currentOnSale - 1;
+        uint current = currentOnSale;
+        currentOnSale = current - 1;
     }
 
     function deleteBeanz(uint _tokenId) internal{
         uint index;
-        for(uint i; i < beanzId.length; i++) {
-            if(beanzId[i] == _tokenId) {
+        uint length = beanzId.length;
+        for(uint i; i < length; ++i) {
+            uint beanz = beanzId[i];
+            if(beanz == _tokenId) {
                 index = i;
             }
         }
-        beanzId[index] = beanzId[beanzId.length - 1];
+        uint[] memory beanzs = beanzId;
+        beanzId[index] = beanzs[length - 1];
         beanzId.pop();
     }
 
